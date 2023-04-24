@@ -17,13 +17,17 @@ String appKey = "C0608C705A53CFA8E338B09CDE5B844B";
 
 //constantes
 const int mode = 1;
+const int connSensor = 6;
+const int lightSensor = A3;
 
 //variables
-int connected;
+int connected, err, light = 0, connectivity = 0;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  pinMode(connSensor, INPUT);
+
   while (!Serial);
   Serial.println("Welcome to MKR WAN 1300/1310 first configuration sketch");
   Serial.println("Register to your favourite LoRa network and we are ready to go!");
@@ -41,25 +45,18 @@ void setup() {
   Serial.print("Your device EUI is: ");
   Serial.println(modem.deviceEUI());
 
-
-    Serial.println("Enter your APP EUI");
-    while (!Serial.available());
-    appEui = Serial.readStringUntil('\n');
-
-    Serial.println("Enter your APP KEY");
-    while (!Serial.available());
-    appKey = Serial.readStringUntil('\n');
-
-    appKey.trim();
-    appEui.trim();
-
-    connected = modem.joinOTAA(appEui, appKey);
+  appKey.trim();
+  appEui.trim();
+  Serial.print("trim done...!");
+  connected = modem.joinOTAA(appEui, appKey);
+  Serial.println("first connection tried");
   
 
   if (!connected) {
     Serial.println("Something went wrong; are you indoor? Move near a window and retry");
     //while (1) {}
     connected = modem.joinOTAA(appEui, appKey);
+    Serial.print(".");
     delay(50);
   }
 
@@ -67,25 +64,28 @@ void setup() {
     Serial.println("Connected...");
     delay(500);
   }
-/*
-  int err;
+}
+
+void loop() {
+
+  light = analogRead(lightSensor);
+  connectivity = digitalRead(connSensor);
+
   modem.setPort(3);
   modem.beginPacket();
-  modem.print("HeLoRA world!");
+  modem.print(String(light));
+  modem.print(String(connectivity));
+
   err = modem.endPacket(true);
   if (err > 0) {
     Serial.println("Message sent correctly!");
   } else {
     Serial.println("Error sending message :(");
   }
-  */
-}
-
-void loop() {
-  /*
+  
   while (modem.available()) {
     Serial.write(modem.read());
   }
   modem.poll();
-  */
+  
 }
