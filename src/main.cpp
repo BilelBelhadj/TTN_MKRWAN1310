@@ -11,11 +11,15 @@ LoRaModem modem;
 // Uncomment if using the Murata chip as a module
 // LoRaModem modem(Serial1);
 
-String appEui;
-String appKey;
-String devAddr;
-String nwkSKey;
-String appSKey;
+String appEui = "0000000000000000";
+String appKey = "C0608C705A53CFA8E338B09CDE5B844B";
+
+
+//constantes
+const int mode = 1;
+
+//variables
+int connected;
 
 void setup() {
   // put your setup code here, to run once:
@@ -37,15 +41,7 @@ void setup() {
   Serial.print("Your device EUI is: ");
   Serial.println(modem.deviceEUI());
 
-  int mode = 0;
-  while (mode != 1 && mode != 2) {
-    Serial.println("Are you connecting via OTAA (1) or ABP (2)?");
-    while (!Serial.available());
-    mode = Serial.readStringUntil('\n').toInt();
-  }
 
-  int connected;
-  if (mode == 1) {
     Serial.println("Enter your APP EUI");
     while (!Serial.available());
     appEui = Serial.readStringUntil('\n');
@@ -58,34 +54,20 @@ void setup() {
     appEui.trim();
 
     connected = modem.joinOTAA(appEui, appKey);
-  } else if (mode == 2) {
-
-    Serial.println("Enter your Device Address");
-    while (!Serial.available());
-    devAddr = Serial.readStringUntil('\n');
-
-    Serial.println("Enter your NWS KEY");
-    while (!Serial.available());
-    nwkSKey = Serial.readStringUntil('\n');
-
-    Serial.println("Enter your APP SKEY");
-    while (!Serial.available());
-    appSKey = Serial.readStringUntil('\n');
-
-    devAddr.trim();
-    nwkSKey.trim();
-    appSKey.trim();
-
-    connected = modem.joinABP(devAddr, nwkSKey, appSKey);
-  }
+  
 
   if (!connected) {
     Serial.println("Something went wrong; are you indoor? Move near a window and retry");
-    while (1) {}
+    //while (1) {}
+    connected = modem.joinOTAA(appEui, appKey);
+    delay(50);
   }
 
-  delay(5000);
-
+  if (connected) {
+    Serial.println("Connected...");
+    delay(500);
+  }
+/*
   int err;
   modem.setPort(3);
   modem.beginPacket();
@@ -96,11 +78,14 @@ void setup() {
   } else {
     Serial.println("Error sending message :(");
   }
+  */
 }
 
 void loop() {
+  /*
   while (modem.available()) {
     Serial.write(modem.read());
   }
   modem.poll();
+  */
 }
